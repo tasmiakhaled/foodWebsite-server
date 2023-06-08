@@ -1,15 +1,15 @@
 const express = require('express');
 const cors = require('cors');
-const http = require('http');
-const socketIo = require('socket.io');
+// const http = require('http');
+// const socketIo = require('socket.io');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const multer = require('multer');
 const path = require('path');
 require('dotenv').config();
 
 const app = express();
-const server = http.createServer(app);
-const io = socketIo(server);
+// const server = http.createServer(app);
+// const io = socketIo(server);
 
 const port = process.env.PORT || 5000;
 
@@ -78,19 +78,26 @@ async function run() {
         });
 
         app.post('/addReview', upload.single('image'), async (req, res) => {
-            const { name, email, review } = req.body;
+            const { name, email, rating, review } = req.body;
             const image = req.file ? req.file.path : null;
 
             const reviewObj = {
                 name,
                 email,
+                rating, 
                 review,
                 image,
             };
 
-            const result = await reviewCollection.insertOne(reviewObj);
-            res.send(result.insertedCount > 0);
+            try {
+                const result = await reviewCollection.insertOne(reviewObj);
+                res.send(result.insertedId); 
+            } catch (error) {
+                console.error('Error:', error);
+                res.status(500).send('An error occurred while adding the review.');
+            }
         });
+
 
         app.get('/reviews', async (req, res) => {
             const query = {};
@@ -138,24 +145,24 @@ async function run() {
 
 run().catch(err => console.error(err));
 
-io.on('connection', (socket) => {
-    console.log(`Socket ${socket.id} connected`);
+// io.on('connection', (socket) => {
+//     console.log(`Socket ${socket.id} connected`);
 
-    socket.on('check-userName', async (userName) => {
-        const users = client.db('foodMood').collection('users');
-        const user = await users.findOne({ userName });
+//     socket.on('check-userName', async (userName) => {
+//         const users = client.db('foodMood').collection('users');
+//         const user = await users.findOne({ userName });
 
-        if (user) {
-            socket.emit('userName-taken');
-        } else {
-            socket.emit('userName-available');
-        }
-    });
+//         if (user) {
+//             socket.emit('userName-taken');
+//         } else {
+//             socket.emit('userName-available');
+//         }
+//     });
 
-    socket.on('disconnect', () => {
-        console.log(`Socket ${socket.id} disconnected`);
-    });
-});
+//     socket.on('disconnect', () => {
+//         console.log(`Socket ${socket.id} disconnected`);
+//     });
+// });
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -163,6 +170,6 @@ app.get('/', (req, res) => {
     res.send('food server is running');
 });
 
-server.listen(port, () => {
+app.listen(port, () => {
     console.log(`Food server is running on ${port}`);
 });
