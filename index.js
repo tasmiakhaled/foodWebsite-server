@@ -66,8 +66,15 @@ async function run() {
 
         app.post('/addUser', async (req, res) => {
             const user = req.body;
-            const result = await userCollection.insertOne(user);
-            res.send(result.insertedCount > 0);
+            const existingUser = await userCollection.findOne({ userName: user.userName });
+
+            if (existingUser) {
+                // User with the same username already exists
+                res.status(409).send('Username already exists');
+            } else {
+                const result = await userCollection.insertOne(user);
+                res.send(result.insertedCount > 0);
+            }
         });
 
         app.get('/users', async (req, res) => {
@@ -84,14 +91,14 @@ async function run() {
             const reviewObj = {
                 name,
                 email,
-                rating, 
+                rating,
                 review,
                 image,
             };
 
             try {
                 const result = await reviewCollection.insertOne(reviewObj);
-                res.send(result.insertedId); 
+                res.send(result.insertedId);
             } catch (error) {
                 console.error('Error:', error);
                 res.status(500).send('An error occurred while adding the review.');
@@ -106,12 +113,16 @@ async function run() {
             res.send(reviews);
         });
 
-        app.get('/users/:userName', async (req, res) => {
-            const userName = req.params.userName;
-            const query = { userName: userName };
-            const user = await userCollection.findOne(query);
-            res.send(user);
-        });
+        app.get('/checkUsername', async (req, res) => {
+            const { username } = req.query;
+            const existingUser = await userCollection.findOne({ userName: username });
+          
+            if (existingUser) {
+              res.send({ available: false });
+            } else {
+              res.send({ available: true });
+            }
+          });
 
         app.put('/foods/:id/like', async (req, res) => {
             const id = req.params.id;
