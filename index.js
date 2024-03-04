@@ -1,15 +1,11 @@
 const express = require('express');
 const cors = require('cors');
-// const http = require('http');
-// const socketIo = require('socket.io');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const multer = require('multer');
 const path = require('path');
 require('dotenv').config();
 
 const app = express();
-// const server = http.createServer(app);
-// const io = socketIo(server);
 
 const port = process.env.PORT || 5000;
 
@@ -150,30 +146,11 @@ async function run() {
             }
         });
     } finally {
-        // Perform cleanup tasks if required
+
     }
 }
 
 run().catch(err => console.error(err));
-
-// io.on('connection', (socket) => {
-//     console.log(`Socket ${socket.id} connected`);
-
-//     socket.on('check-userName', async (userName) => {
-//         const users = client.db('foodMood').collection('users');
-//         const user = await users.findOne({ userName });
-
-//         if (user) {
-//             socket.emit('userName-taken');
-//         } else {
-//             socket.emit('userName-available');
-//         }
-//     });
-
-//     socket.on('disconnect', () => {
-//         console.log(`Socket ${socket.id} disconnected`);
-//     });
-// });
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
