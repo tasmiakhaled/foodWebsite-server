@@ -9,7 +9,15 @@ const app = express();
 
 const port = process.env.PORT || 5000;
 
-app.use(cors());
+app.use(
+    cors({
+        origin: [
+            "http://localhost:3000",
+            "https://restaurantapp-bd68c.web.app",
+            "https://restaurantapp-bd68c.firebaseapp.com"],
+        credentials: true,
+    })
+);
 app.use(express.json());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.lqoavff.mongodb.net/?retryWrites=true&w=majority`;
@@ -38,7 +46,7 @@ const upload = multer({ storage: storage, fileFilter: fileFilter });
 
 async function run() {
     try {
-        await client.connect();
+        // await client.connect();
         console.log('Connected to MongoDB');
 
         const db = client.db('foodMood');
